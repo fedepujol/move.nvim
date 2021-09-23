@@ -14,4 +14,4 @@ command! -nargs=1 -range=% MoveBlock lua require('move').MoveBlock(<args>, <line
 let &cpo = s:save_cpo 
 unlet s:save_cpo
 
-let g:loaded_whid = 1
+let g:loaded_move = 1
