@@ -103,9 +103,4 @@ function MoveBlock(dir, line1, line2)
 	end
 end
 
-vim.api.nvim_set_keymap('n', '<C-A-j>', "<Cmd>lua MoveLine(1)<CR>", { noremap = true, silent = true, nowait = true })
-vim.api.nvim_set_keymap('n', '<C-A-k>', "<Cmd>lua MoveLine(-1)<CR>", { noremap = true, silent = true, nowait = true })
-vim.api.nvim_set_keymap('v', '<C-A-k>', "<Cmd>lua MoveBlock(-1)<CR>", { noremap = true, silent = true, nowait = true })
-vim.api.nvim_set_keymap('v', '<C-A-j>', "<Cmd>lua MoveBlock(1)<CR>", { noremap = true, silent = true, nowait = true })
-
 return { MoveLine = MoveLine, MoveBlock = MoveBlock }
