@@ -9,7 +9,6 @@ set cpo&vim
 " command to run our plugin
 command! -nargs=1 MoveLine lua require('move').MoveLine(<args>)
 command! -nargs=1 -range=% MoveBlock lua require('move').MoveBlock(<args>, <line1>, <line2>)
-lua map = require('lua.mapping')
 
 " and restore after
 let &cpo = s:save_cpo 
