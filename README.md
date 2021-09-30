@@ -2,6 +2,8 @@
 
 Gain the power to move lines and blocks!
 
+![it-moves](media/move_01.gif)
+
 ## Installation
 
 -   [packer.nvim](https://github.com/wbthoason/packer.nvim)
