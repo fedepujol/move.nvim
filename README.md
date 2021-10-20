@@ -78,3 +78,6 @@ vim.api.nvim_set_keymap('v', '<A-k>', "<Cmd>lua require('move').MoveBlock(-1)<CR
 vim.api.nvim_set_keymap('v', '<A-j>', ":MoveBlock(1)<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<A-k>', ":MoveBlock(-1)<CR>", { noremap = true, silent = true })
 ```
+
+## Mention
+There is an original and more feature rich plugin (written in vimL): [vim-move](https://github.com/matze/vim-move).
