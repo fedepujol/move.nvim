@@ -73,6 +73,12 @@ M.horzBlock = function(dir)
 	end
 
 	vim.api.nvim_buf_set_lines(0, sRow - 1, eRow, true, results)
+	vim.api.nvim_win_set_cursor(0, { sRow, (sCol - 1) + dir })
+
+	vim.cmd('execute "normal! \\e\\e"')
+	local suffix = (eCol - sCol > 0 and (eCol - sCol)..'l' or '')
+	suffix = suffix..(eRow - sRow > 0 and (eRow - sRow)..'j' or '')
+	vim.cmd('execute "normal! \\<C-V>'..suffix..'"')
 end
 
 return M
