@@ -97,6 +97,6 @@ vim.api.nvim_set_keymap('v', '<A-h>', ":MoveHBlock(-1)<CR>", { noremap = true, s
 
 ## Mention
 
-There is an original and more feature rich plugin (written in vimL):
+There is an original and more feature rich plugin (written in VimScript):
 
 [vim-move](https://github.com/matze/vim-move).
