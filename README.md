@@ -10,7 +10,7 @@ Gain the power to move lines and blocks!
 
 ![hor-char](media/hor_character.gif)
 
-![hor-block](media/hor_block.git)
+![hor-block](media/hor_block.gif)
 
 ## Installation
 
