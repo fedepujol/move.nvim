@@ -64,6 +64,10 @@ M.horzBlock = function(dir)
 			end
 
 			target = string.sub(v, sCol - 1, sCol - 1)
+			if target == ' ' and string.sub(v, sCol - 2, sCol - 2) == ' ' then
+				target = ''
+			end
+
 			local selected = string.sub(v, sCol, eCol)
 			local prefix = string.sub(v, 1, sCol - 2)
 			local suffix = string.sub(v, eCol + 1)
