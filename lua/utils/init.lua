@@ -62,4 +62,43 @@ M.swap_line = function(source, target)
 	vim.api.nvim_win_set_cursor(0, { target, col })
 end
 
+local function countIndent(line)
+	local count = 0
+
+	for _ in string.gmatch(line, '\t') do
+		count = count + 1
+	end
+
+	return count
+end
+
+M.calc_indent = function(target)
+	local next_line = vim.api.nvim_buf_get_lines(0, target, target + 1, true)
+	local target_line = vim.api.nvim_buf_get_lines(0, target - 1, target, true)
+
+	print(vim.inspect(next_line))
+	print(vim.inspect(target_line))
+
+	local sCount = countIndent(next_line[1])
+	local tCount = countIndent(target_line[1])
+
+	if sCount == tCount then
+		return sCount
+	elseif tCount < sCount then
+	 	return sCount
+	end
+end
+
+
+M.indent = function(amount)
+	local absIndent = nil
+
+	if amount < 0 then
+		absIndent = math.abs(amount)
+		vim.api.nvim_exec(':normal! V'..absIndent..'<', false)
+	elseif amount > 0 then
+		vim.api.nvim_exec(':normal! V'..amount..'>', false)
+	end
+end
+
 return M

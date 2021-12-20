@@ -29,7 +29,9 @@ M.moveLine = function(dir)
 
 	-- General Case
 	if line >= 1 and line <= last_line then
+		local indent = utils.calc_indent(line + dir)
 		utils.swap_line(line, line + dir)
+		utils.indent(indent)
 	end
 end
 
