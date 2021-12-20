@@ -66,38 +66,58 @@ local function countIndent(line)
 	local count = 0
 
 	for _ in string.gmatch(line, '\t') do
-		count = count + 1
+	count = count + 1
 	end
 
 	return count
 end
 
-M.calc_indent = function(target)
+M.calc_indent = function(target, dir)
+	local target_line = vim.api.nvim_buf_get_lines(0, target - 1 , target, true)
 	local next_line = vim.api.nvim_buf_get_lines(0, target, target + 1, true)
-	local target_line = vim.api.nvim_buf_get_lines(0, target - 1, target, true)
 
-	print(vim.inspect(next_line))
-	print(vim.inspect(target_line))
+	if dir < 0 then
+		next_line = vim.api.nvim_buf_get_lines(0, target - 2, target - 1, true)
+	end
 
-	local sCount = countIndent(next_line[1])
+	-- print('target_line '..vim.inspect(target_line))
+	-- print('next_line '..vim.inspect(next_line))
+
 	local tCount = countIndent(target_line[1])
+	local nCount = countIndent(next_line[1])
 
-	if sCount == tCount then
-		return sCount
-	elseif tCount < sCount then
-	 	return sCount
+	-- print('tCount '..tCount)
+	-- print('nCount '..nCount)
+
+	if nCount == tCount then
+		return nCount
+	elseif tCount < nCount then
+	 	return nCount
+	else
+	 	return tCount
 	end
 end
 
 
 M.indent = function(amount)
 	local absIndent = nil
+	local cRow = vim.api.nvim_win_get_cursor(0)[1]
+	local curren_line = vim.api.nvim_buf_get_lines(0, cRow - 1, cRow, true)
 
-	if amount < 0 then
-		absIndent = math.abs(amount)
+	local cIndent = countIndent(curren_line[1])
+	local diff = amount - cIndent
+	print('diff '..diff)
+	print('amount '..amount)
+
+	if diff > 0 then
+		vim.api.nvim_exec(':normal! V'..diff..'>', false)
+	elseif diff < 0 and amount ~= 0 then
+		absIndent = math.abs(diff)
 		vim.api.nvim_exec(':normal! V'..absIndent..'<', false)
-	elseif amount > 0 then
-		vim.api.nvim_exec(':normal! V'..amount..'>', false)
+	elseif diff < 0 and amount == 0 then
+		vim.api.nvim_exec(':normal! ==', false)
+	elseif diff == 0 and amount > 0 then
+	 	vim.api.nvim_exec(':normal! ==', false)
 	end
 end
 
