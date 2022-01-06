@@ -1,5 +1,4 @@
 local M = {}
-
 -- Desc:
 -- 		Gets the lines between a range
 -- Paramters:
@@ -63,62 +62,57 @@ M.swap_line = function(source, target)
 end
 
 local function countIndent(line)
-	local count = 0
-
-	for _ in string.gmatch(line, '\t') do
-	count = count + 1
-	end
-
-	return count
+	return vim.fn.indent(line) / vim.fn.shiftwidth()
 end
 
 M.calc_indent = function(target, dir)
-	local target_line = vim.api.nvim_buf_get_lines(0, target - 1 , target, true)
-	local next_line = vim.api.nvim_buf_get_lines(0, target, target + 1, true)
+	local tCount = countIndent(target)
+	local nCount = countIndent(target + dir)
 
-	if dir < 0 then
-		next_line = vim.api.nvim_buf_get_lines(0, target - 2, target - 1, true)
-	end
-
-	-- print('target_line '..vim.inspect(target_line))
-	-- print('next_line '..vim.inspect(next_line))
-
-	local tCount = countIndent(target_line[1])
-	local nCount = countIndent(next_line[1])
-
-	-- print('tCount '..tCount)
-	-- print('nCount '..nCount)
-
-	if nCount == tCount then
-		return nCount
-	elseif tCount < nCount then
-	 	return nCount
+	if tCount < nCount then
+		return tCount
 	else
-	 	return tCount
+		return nCount
 	end
+
 end
 
-
 M.indent = function(amount)
-	local absIndent = nil
 	local cRow = vim.api.nvim_win_get_cursor(0)[1]
-	local curren_line = vim.api.nvim_buf_get_lines(0, cRow - 1, cRow, true)
 
-	local cIndent = countIndent(curren_line[1])
+	local cIndent = countIndent(cRow)
 	local diff = amount - cIndent
-	print('diff '..diff)
-	print('amount '..amount)
 
-	if diff > 0 then
-		vim.api.nvim_exec(':normal! V'..diff..'>', false)
-	elseif diff < 0 and amount ~= 0 then
-		absIndent = math.abs(diff)
-		vim.api.nvim_exec(':normal! V'..absIndent..'<', false)
-	elseif diff < 0 and amount == 0 then
-		vim.api.nvim_exec(':normal! ==', false)
-	elseif diff == 0 and amount > 0 then
-	 	vim.api.nvim_exec(':normal! ==', false)
+	print('diff '..diff, 'amount '..amount, 'cIndent '..cIndent)
+
+	cIndent = countIndent(cRow)
+	vim.cmd('silent! normal! ==')
+	local newInd = countIndent(cRow)
+
+	vim.cmd('silent! '..cRow..''..string.rep('<', newInd))
+	vim.cmd('silent! '..cRow..''..string.rep('>', cIndent))
+
+	print('cIndent '..cIndent, 'newIndent '..newInd)
+
+	-- local oldShi = vim.fn.shiftwidth()
+	-- vim.o.shiftwidth = 1
+
+	if cIndent ~= newInd and cIndent < newInd then
+		print('hola')
+		vim.cmd('silent! '..cRow..','..cRow..string.rep('>', newInd - cIndent))
+	else
+		vim.cmd('silent! '..cRow..','..cRow..string.rep('<', cIndent - newInd))
 	end
+	-- vim.o.shiftwidth = oldShi
+
+	if diff == 0 and cIndent == 0 and newInd == 1 then
+		vim.cmd(':'..cRow..''..string.rep('<', newInd))
+	end
+
+	if diff == 0 and cIndent == 1 and newInd == 1 then
+		vim.cmd(':'..cRow..''..string.rep('>', newInd))
+	end
+
 end
 
 return M
