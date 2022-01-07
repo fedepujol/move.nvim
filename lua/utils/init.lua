@@ -70,47 +70,48 @@ M.calc_indent = function(target, dir)
 	local nCount = countIndent(target + dir)
 
 	if tCount < nCount then
-		return tCount
-	else
 		return nCount
+	else
+		return tCount
 	end
 
 end
 
-M.indent = function(amount)
-	local cRow = vim.api.nvim_win_get_cursor(0)[1]
+M.indent_block = function(amount, sLine, eLine)
+	local cRow = sLine or vim.api.nvim_win_get_cursor(0)[1]
+	local eRow = eLine or cRow
 
 	local cIndent = countIndent(cRow)
 	local diff = amount - cIndent
 
-	print('diff '..diff, 'amount '..amount, 'cIndent '..cIndent)
+	if diff < 0 then
+		vim.cmd('silent! '..cRow..','..eRow..string.rep('<', math.abs(diff)))
+	elseif diff > 0 then
+		vim.cmd('silent! '..cRow..','..eRow..string.rep('>', diff))
+	end
+end
 
-	cIndent = countIndent(cRow)
+M.indent = function(amount, sLine, eLine)
+	local cRow = sLine or vim.api.nvim_win_get_cursor(0)[1]
+	local eRow = eLine or cRow
+
+	local cIndent = countIndent(cRow)
+	local diff = amount - cIndent
+
 	vim.cmd('silent! normal! ==')
 	local newInd = countIndent(cRow)
 
-	vim.cmd('silent! '..cRow..''..string.rep('<', newInd))
-	vim.cmd('silent! '..cRow..''..string.rep('>', cIndent))
+	vim.cmd('silent! '..cRow..','..eRow..string.rep('<', newInd))
+	vim.cmd('silent! '..cRow..','..eRow..string.rep('>', cIndent))
 
-	print('cIndent '..cIndent, 'newIndent '..newInd)
-
-	-- local oldShi = vim.fn.shiftwidth()
-	-- vim.o.shiftwidth = 1
-
-	if cIndent ~= newInd and cIndent < newInd then
-		print('hola')
-		vim.cmd('silent! '..cRow..','..cRow..string.rep('>', newInd - cIndent))
-	else
-		vim.cmd('silent! '..cRow..','..cRow..string.rep('<', cIndent - newInd))
-	end
-	-- vim.o.shiftwidth = oldShi
-
-	if diff == 0 and cIndent == 0 and newInd == 1 then
-		vim.cmd(':'..cRow..''..string.rep('<', newInd))
-	end
-
-	if diff == 0 and cIndent == 1 and newInd == 1 then
-		vim.cmd(':'..cRow..''..string.rep('>', newInd))
+	if cIndent ~= newInd and diff ~= 0 then
+		if cIndent < newInd then
+			vim.cmd('silent! '..cRow..','..eRow..string.rep('>', newInd - cIndent))
+		else
+			vim.cmd('silent! '..cRow..','..eRow..string.rep('<', cIndent - newInd))
+		end
+	elseif diff > 0 then
+		vim.cmd('silent! '..cRow..','..eRow..string.rep('>', diff))
 	end
 
 end
