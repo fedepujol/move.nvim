@@ -52,16 +52,6 @@ The plugin provides the following commands:
 #### VimScript
 
 ``` vim-script
-nnoremap <silent> <A-j> <cmd>lua require('move').MoveLine(1)<CR>
-nnoremap <silent> <A-k> <cmd>lua require('move').MoveLine(-1)<CR>
-vnoremap <silent> <A-j> <cmd>lua require('move').MoveBlock(1)<CR>
-vnoremap <silent> <A-k> <cmd>lua require('move').MoveBlock(-1)<CR>
-nnoremap <silent> <A-l> <cmd>lua require('move').MoveHChar(1)<CR>
-nnoremap <silent> <A-h> <cmd>lua require('move').MoveHChar(-1)<CR>
-vnoremap <silent> <A-l> <cmd>lua require('move').MoveHBlock(1)<CR>
-vnoremap <silent> <A-h> <cmd>lua require('move').MoveHBlock(-1)<CR>
-
-" Or use the command
 nnoremap <silent> <A-j> :MoveLine(1)<CR>
 nnoremap <silent> <A-k> :MoveLine(-1)<CR>
 vnoremap <silent> <A-j> :MoveBlock(1)<CR>
