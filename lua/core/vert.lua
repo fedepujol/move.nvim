@@ -29,7 +29,9 @@ M.moveLine = function(dir)
 
 	-- General Case
 	if line >= 1 and line <= last_line then
+		local amount = utils.calc_indent(line + dir, dir)
 		utils.swap_line(line, line + dir)
+		utils.indent(amount, line + dir)
 	end
 end
 
@@ -74,7 +76,9 @@ M.moveBlock = function(dir, line1, line2)
 		table.insert(vBlock, 1, vTarget[1])
 	end
 
+	local amount = utils.calc_indent((dir > 0 and vERow or vSRow + 1) + dir, dir)
 	utils.move_range(vBlock, (dir > 0 and vSRow or vSRow - 1), (dir > 0 and vERow + 1 or vERow))
+	utils.indent_block(amount, (dir > 0 and vSRow + 2 or vSRow), vERow + dir)
 	utils.reselect_block(dir, vSRow, vERow)
 end
 

@@ -1,5 +1,4 @@
 local M = {}
-
 -- Desc:
 -- 		Gets the lines between a range
 -- Paramters:
@@ -60,6 +59,61 @@ M.swap_line = function(source, target)
 
 	-- Set cursor position
 	vim.api.nvim_win_set_cursor(0, { target, col })
+end
+
+local function countIndent(line)
+	return vim.fn.indent(line) / vim.fn.shiftwidth()
+end
+
+M.calc_indent = function(target, dir)
+	local tCount = countIndent(target)
+	local nCount = countIndent(target + dir)
+
+	if tCount < nCount then
+		return nCount
+	else
+		return tCount
+	end
+
+end
+
+M.indent_block = function(amount, sLine, eLine)
+	local cRow = sLine or vim.api.nvim_win_get_cursor(0)[1]
+	local eRow = eLine or cRow
+
+	local cIndent = countIndent(cRow)
+	local diff = amount - cIndent
+
+	if diff < 0 then
+		vim.cmd('silent! '..cRow..','..eRow..string.rep('<', math.abs(diff)))
+	elseif diff > 0 then
+		vim.cmd('silent! '..cRow..','..eRow..string.rep('>', diff))
+	end
+end
+
+M.indent = function(amount, sLine, eLine)
+	local cRow = sLine or vim.api.nvim_win_get_cursor(0)[1]
+	local eRow = eLine or cRow
+
+	local cIndent = countIndent(cRow)
+	local diff = amount - cIndent
+
+	vim.cmd('silent! normal! ==')
+	local newInd = countIndent(cRow)
+
+	vim.cmd('silent! '..cRow..','..eRow..string.rep('<', newInd))
+	vim.cmd('silent! '..cRow..','..eRow..string.rep('>', cIndent))
+
+	if cIndent ~= newInd and diff ~= 0 then
+		if cIndent < newInd then
+			vim.cmd('silent! '..cRow..','..eRow..string.rep('>', newInd - cIndent))
+		else
+			vim.cmd('silent! '..cRow..','..eRow..string.rep('<', cIndent - newInd))
+		end
+	elseif diff > 0 then
+		vim.cmd('silent! '..cRow..','..eRow..string.rep('>', diff))
+	end
+
 end
 
 return M
