@@ -4,7 +4,9 @@ Gain the power to move lines and blocks!
 
 ## Vertical Movement
 
-![it-moves](media/move_01.gif)
+![vert-line-move](media/move_line.gif)
+
+![vert-block-move](media/move_block.gif)
 
 ## Horizontal Movement
 
