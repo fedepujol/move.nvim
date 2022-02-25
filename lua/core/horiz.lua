@@ -13,23 +13,37 @@ M.horzChar = function(dir)
 	local suffix = ''
 	local result = {}
 	local line_res = ''
+	local selected = ''
 
 	-- Checks line limits with the direction
 	if dir < 0 and col < 1 then
 		return
 	end
 
-	local selected = string.sub(line, col + 1, col + 1)
+	local unicode = vim.api.nvim_exec(':normal! g8', true)
+	unicode = string.gsub(unicode, '%s+$', '')
+	prefix = string.sub(line, 1, col + (dir > 0 and 0 or dir))
+
+	if unicode:len() > 2 then
+		vim.cmd(':normal! x')
+		selected = vim.fn.getreg('"0')
+	else
+		selected = string.sub(line, col + 1, col + 1)
+	end
 
 	-- Put a space if the character reaches the end of the line
 	if col == line:len() - 1 and dir > 0 then
 		target = ' '
+	elseif unicode:len() > 5 then
+		target = string.sub(line, col + dir + 1 + (dir > 0 and 2 or 0), col + dir + 1 + (dir > 0 and 2 or 0))
+		suffix = string.sub(line, col + (dir > 0 and 5 or 4))
+	elseif unicode:len() > 2 then
+		target = string.sub(line, col + dir + 1 + (dir > 0 and 1 or 0), col + dir + 1 + (dir > 0 and 1 or 0))
+		suffix = string.sub(line, col + (dir > 0 and 4 or 3))
 	else
-		target = string.sub(line, col + 1 + dir, col + 1 + dir)
+		target = string.sub(line, col + dir + 1, col + dir + 1)
+		suffix = string.sub(line, col + (dir > 0 and 3 or 2))
 	end
-
-	prefix = string.sub(line, 1, col + (dir > 0 and 0 or -1))
-	suffix = string.sub(line, col + (dir > 0 and 3 or 2))
 
 	-- Remove trailing spaces before putting into the table
 	line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
