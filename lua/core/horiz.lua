@@ -15,35 +15,68 @@ M.horzChar = function(dir)
 	local line_res = ''
 	local selected = ''
 
+	local sUnicode = ''
+	local tUnicode = ''
+
 	-- Checks line limits with the direction
 	if dir < 0 and col < 1 then
 		return
 	end
 
-	local unicode = vim.api.nvim_exec(':normal! g8', true)
-	unicode = string.gsub(unicode, '%s+$', '')
+	-- Default
 	prefix = string.sub(line, 1, col + (dir > 0 and 0 or dir))
 
-	if unicode:len() > 2 then
-		vim.cmd(':normal! x')
-		selected = vim.fn.getreg('"0')
+ 	-- Unicode or tilde character
+	sUnicode = vim.api.nvim_exec(':normal! g8', true)
+	sUnicode = string.gsub(sUnicode, '%s+$', '')
+
+	if isTilde(sUnicode) then
+		selected = getUnicodeOrTilde()
 	else
 		selected = string.sub(line, col + 1, col + 1)
 	end
 
+	-- Check if target is unicode or tilde
+	if isTilde(sUnicode) and dir < 0 then
+		vim.api.nvim_win_set_cursor(0, { sRow, col + dir })
+	end
+	tUnicode = vim.api.nvim_exec(':normal! g8', true)
+	tUnicode = string.gsub(tUnicode, '%s+$', '')
+
 	-- Put a space if the character reaches the end of the line
+	-- Default
 	if col == line:len() - 1 and dir > 0 then
 		target = ' '
-	elseif unicode:len() > 5 then
-		target = string.sub(line, col + dir + 1 + (dir > 0 and 2 or 0), col + dir + 1 + (dir > 0 and 2 or 0))
-		suffix = string.sub(line, col + (dir > 0 and 5 or 4))
-	elseif unicode:len() > 2 then
-		target = string.sub(line, col + dir + 1 + (dir > 0 and 1 or 0), col + dir + 1 + (dir > 0 and 1 or 0))
-		suffix = string.sub(line, col + (dir > 0 and 4 or 3))
 	else
-		target = string.sub(line, col + dir + 1, col + dir + 1)
 		suffix = string.sub(line, col + (dir > 0 and 3 or 2))
 	end
+
+	if isUnicode(sUnicode) then
+		suffix = suffixUnicode(tUnicode, line, col, dir)
+	end
+
+	if isTilde(sUnicode) then
+		suffix = suffixTilde(tUnicode, line, col, dir)
+	end
+
+	if not isTilde(tUnicode) then
+		-- Default
+		target = string.sub(line, col + dir + 1, col + dir + 1)
+
+		if isUnicode(sUnicode) then
+			target = string.sub(line, col + dir + 1 + (dir > 0 and 2 or 0), col + dir + 1 + (dir > 0 and 2 or 0))
+		elseif isTilde(sUnicode) then
+			target = string.sub(line, col + dir + 1 + (dir > 0 and 1 or 0), col + dir + 1 + (dir > 0 and 1 or 0))
+		end
+	else
+		target = getUnicodeOrTilde()
+		prefix = string.sub(line, 1, col)
+	end
+
+	-- Return cursor position to original
+	vim.api.nvim_win_set_cursor(0, { sRow, col })
+
+	print('target: '..target, 'prefix: '..prefix, 'suffix: '..suffix)
 
 	-- Remove trailing spaces before putting into the table
 	line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix

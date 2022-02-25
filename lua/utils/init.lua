@@ -116,4 +116,48 @@ M.indent = function(amount, sLine, eLine)
 
 end
 
+
+local isTilde = function(char)
+	return char:len() > 2
+end
+
+local isUnicode = function(char)
+ 	return char:len() > 5
+end
+
+local getUnicodeOrTilde = function()
+	vim.cmd(':normal! x')
+	return vim.fn.getreg('"0')
+end
+
+local suffixUnicode = function(tUnicode, line, col, dir)
+	local suffix = ''
+
+	if isUnicode(tUnicode) then
+		suffix = string.sub(line, col + (dir > 0 and 7 or 4))
+	else
+		suffix = string.sub(line, col + (dir > 0 and 5 or 4))
+	end
+
+	return suffix
+end
+
+local targetUnicode = function()
+end
+
+local suffixTilde = function(tUnicode, line, col, dir)
+	local suffix = ''
+
+	if isTilde(tUnicode) then
+		suffix = string.sub(line, col + (dir > 0 and 5 or 3))
+	else
+		suffix = string.sub(line, col + (dir > 0 and 4 or 3))
+	end
+
+	return suffix
+end
+
+local targetTilde = function()
+end
+
 return M
