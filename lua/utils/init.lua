@@ -116,48 +116,61 @@ M.indent = function(amount, sLine, eLine)
 
 end
 
-
-local isTilde = function(char)
+M.isTilde = function(char)
 	return char:len() > 2
 end
 
-local isUnicode = function(char)
+M.isUnicode = function(char)
  	return char:len() > 5
 end
 
-local getUnicodeOrTilde = function()
+M.getChar = function()
 	vim.cmd(':normal! x')
 	return vim.fn.getreg('"0')
 end
 
-local suffixUnicode = function(tUnicode, line, col, dir)
-	local suffix = ''
+M.curUnicodeOrTilde = function()
+	local uni = ''
 
-	if isUnicode(tUnicode) then
-		suffix = string.sub(line, col + (dir > 0 and 7 or 4))
+	uni = vim.api.nvim_exec(':normal! g8', true)
+	uni = string.gsub(uni, '%s+$', '')
+
+	return uni
+end
+
+M.suffixUnicode = function(tUnicode, sUnicode, line, col, dir)
+	local suffix = ''
+	local offset = 0
+
+	if dir > 0 then
+		if M.isUnicode(tUnicode) then
+			if M.isUnicode(sUnicode) then
+				offset = 7
+			else
+				offset = 5
+			end
+		else
+			offset = 5
+		end
 	else
-		suffix = string.sub(line, col + (dir > 0 and 5 or 4))
+		if M.isUnicode(tUnicode) then
+			if M.isUnicode(sUnicode) then
+				offset = 4
+			else
+				offset = 2
+			end
+		else
+			offset = 4
+		end
 	end
+
+	suffix = string.sub(line, col + offset)
 
 	return suffix
 end
 
-local targetUnicode = function()
-end
-
-local suffixTilde = function(tUnicode, line, col, dir)
-	local suffix = ''
-
-	if isTilde(tUnicode) then
-		suffix = string.sub(line, col + (dir > 0 and 5 or 3))
-	else
-		suffix = string.sub(line, col + (dir > 0 and 4 or 3))
-	end
-
-	return suffix
-end
-
-local targetTilde = function()
+M.suffixTilde = function(line, col, dir)
+	return string.sub(line, col + (dir > 0 and 4 or 3))
 end
 
 return M

@@ -1,3 +1,5 @@
+local utils = require('utils')
+
 local M = {}
 
 -- Moves the character under the cursor to the left or right
@@ -26,57 +28,76 @@ M.horzChar = function(dir)
 	-- Default
 	prefix = string.sub(line, 1, col + (dir > 0 and 0 or dir))
 
- 	-- Unicode or tilde character
-	sUnicode = vim.api.nvim_exec(':normal! g8', true)
-	sUnicode = string.gsub(sUnicode, '%s+$', '')
-
-	if isTilde(sUnicode) then
-		selected = getUnicodeOrTilde()
-	else
-		selected = string.sub(line, col + 1, col + 1)
-	end
+	-- Unicode or tilde character
+	sUnicode = utils.curUnicodeOrTilde()
+	selected = utils.getChar()
 
 	-- Check if target is unicode or tilde
-	if isTilde(sUnicode) and dir < 0 then
-		vim.api.nvim_win_set_cursor(0, { sRow, col + dir })
+	-- move cursor to get the character
+	if dir < 0 then
+		vim.api.nvim_win_set_cursor(0, { sRow, col - 3 })
+
+		tUnicode = utils.curUnicodeOrTilde()
+		if not utils.isUnicode(tUnicode) then
+			vim.api.nvim_win_set_cursor(0, { sRow, col - 2 })
+		end
+
+		tUnicode = utils.curUnicodeOrTilde()
+		if not utils.isTilde(tUnicode) then
+			vim.api.nvim_win_set_cursor(0, { sRow, col - 1 })
+		end
+	else
+		tUnicode = utils.curUnicodeOrTilde()
 	end
-	tUnicode = vim.api.nvim_exec(':normal! g8', true)
-	tUnicode = string.gsub(tUnicode, '%s+$', '')
 
 	-- Put a space if the character reaches the end of the line
 	-- Default
-	if col == line:len() - 1 and dir > 0 then
-		target = ' '
-	else
-		suffix = string.sub(line, col + (dir > 0 and 3 or 2))
-	end
+	target = utils.getChar()
+	suffix = string.sub(line, col + (dir > 0 and 3 or 2))
 
-	if isUnicode(sUnicode) then
-		suffix = suffixUnicode(tUnicode, line, col, dir)
-	end
-
-	if isTilde(sUnicode) then
-		suffix = suffixTilde(tUnicode, line, col, dir)
-	end
-
-	if not isTilde(tUnicode) then
-		-- Default
-		target = string.sub(line, col + dir + 1, col + dir + 1)
-
-		if isUnicode(sUnicode) then
-			target = string.sub(line, col + dir + 1 + (dir > 0 and 2 or 0), col + dir + 1 + (dir > 0 and 2 or 0))
-		elseif isTilde(sUnicode) then
-			target = string.sub(line, col + dir + 1 + (dir > 0 and 1 or 0), col + dir + 1 + (dir > 0 and 1 or 0))
+	-- Character under cursor is unicode or tilde
+	if utils.isTilde(sUnicode) or utils.isUnicode(sUnicode) then
+		if utils.isUnicode(sUnicode) then
+			suffix = utils.suffixUnicode(tUnicode, sUnicode, line, col, dir)
+		else
+			suffix = utils.suffixTilde(line, col, dir)
 		end
 	else
-		target = getUnicodeOrTilde()
-		prefix = string.sub(line, 1, col)
+		if utils.isTilde(tUnicode) or utils.isUnicode(tUnicode) then
+			if utils.isUnicode(tUnicode) then
+				suffix = utils.suffixUnicode(tUnicode, sUnicode, line, col, dir)
+			else
+				suffix = utils.suffixTilde(line, col, dir)
+			end
+		end
+	end
+
+	if utils.isTilde(tUnicode) or utils.isUnicode(tUnicode) then
+		if utils.isUnicode(tUnicode) then
+			prefix = string.sub(line, 1, col + (dir < 0 and -3 or 0))
+		else
+			prefix = string.sub(line, 1, col + (dir < 0 and -2 or 0))
+		end
 	end
 
 	-- Return cursor position to original
 	vim.api.nvim_win_set_cursor(0, { sRow, col })
 
-	print('target: '..target, 'prefix: '..prefix, 'suffix: '..suffix)
+	if dir > 0 then
+		if utils.isUnicode(sUnicode) then
+			if col == line:len() - 3 then
+				target = ' '
+			end
+		elseif utils.isTilde(sUnicode) then
+			if col == line:len() - 2 then
+				target = ' '
+			end
+		else
+			if col == line:len() - 1 then
+				target = ' '
+			end
+		end
+	end
 
 	-- Remove trailing spaces before putting into the table
 	line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
