@@ -149,6 +149,10 @@ M.suffixUnicode = function(tUnicode, sUnicode, line, col, dir)
 			else
 				offset = 5
 			end
+		elseif M.isTilde(tUnicode) then
+			if M.isUnicode(sUnicode) then
+				offset = 6
+			end
 		else
 			offset = 5
 		end
@@ -169,8 +173,37 @@ M.suffixUnicode = function(tUnicode, sUnicode, line, col, dir)
 	return suffix
 end
 
-M.suffixTilde = function(line, col, dir)
-	return string.sub(line, col + (dir > 0 and 4 or 3))
+M.suffixTilde = function(tUnicode, sUnicode, line, col, dir)
+	local suffix = ''
+	local offset = 0
+
+	if dir > 0 then
+		if M.isTilde(sUnicode) then
+			if M.isUnicode(tUnicode) then
+				offset = 6
+			elseif M.isTilde(tUnicode) then
+				offset = 5
+			else
+				offset = 4
+			end
+		else
+			if M.isTilde(tUnicode) then
+				offset = 4
+			end
+		end
+	else
+		if M.isTilde(sUnicode) then
+			offset = 3
+		else
+			if M.isTilde(tUnicode) then
+				offset = 2
+			end
+		end
+	end
+
+	suffix = string.sub(line, col + offset)
+
+	return suffix
 end
 
 return M

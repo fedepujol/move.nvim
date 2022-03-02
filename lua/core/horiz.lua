@@ -60,14 +60,15 @@ M.horzChar = function(dir)
 		if utils.isUnicode(sUnicode) then
 			suffix = utils.suffixUnicode(tUnicode, sUnicode, line, col, dir)
 		else
-			suffix = utils.suffixTilde(line, col, dir)
+			suffix = utils.suffixTilde(tUnicode, sUnicode, line, col, dir)
 		end
 	else
+		-- Target character is tilde or unicode
 		if utils.isTilde(tUnicode) or utils.isUnicode(tUnicode) then
 			if utils.isUnicode(tUnicode) then
 				suffix = utils.suffixUnicode(tUnicode, sUnicode, line, col, dir)
 			else
-				suffix = utils.suffixTilde(line, col, dir)
+				suffix = utils.suffixTilde(tUnicode, sUnicode, line, col, dir)
 			end
 		end
 	end
@@ -99,6 +100,18 @@ M.horzChar = function(dir)
 		end
 	end
 
+	print('prefix:'..prefix, 'suffix:'..suffix, 'target:'..target)
+
+	local offset = 0
+	if utils.isUnicode(tUnicode) then
+		offset = 3 + (utils.isUnicode(sUnicode) and dir < 0 and -2 or 0)
+	elseif utils.isTilde(tUnicode) then
+		offset = 2 + (utils.isTilde(sUnicode) and dir < 0 and -1 or 0)
+	else
+		offset = 1
+	end
+	offset = offset * dir
+
 	-- Remove trailing spaces before putting into the table
 	line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
 	line_res = line_res:gsub('%s+$', '')
@@ -107,7 +120,7 @@ M.horzChar = function(dir)
 
 	-- Update the line with the new one and update cursor position
 	vim.api.nvim_buf_set_lines(0, sRow - 1, sRow, true, result)
-	vim.api.nvim_win_set_cursor(0, { sRow, col + dir })
+	vim.api.nvim_win_set_cursor(0, { sRow, col + offset })
 end
 
 -- Moves the visual area left or right
