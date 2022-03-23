@@ -20,7 +20,7 @@ This plugin works with NeoVim v0.5 or later.
 
 ## Installation
 
--   [packer.nvim](https://github.com/wbthoason/packer.nvim)
+-   [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ``` lua
 use 'fedepujol/move.nvim'
