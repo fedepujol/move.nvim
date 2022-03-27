@@ -154,6 +154,12 @@ M.getChar = function()
 	return vim.fn.getreg('"0')
 end
 
+M.getVisualChar = function(sCol, eCol)
+	vim.cmd(':normal! v'..(eCol - sCol)..'l')
+	vim.cmd(':normal! x')
+	return vim.fn.getreg('"0')
+end
+
 M.curUnicodeOrTilde = function()
 	local uni = ''
 
