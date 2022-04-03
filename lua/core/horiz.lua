@@ -112,92 +112,34 @@ M.horzBlock = function(dir)
 	-- Iterates over the lines of the visual area
 	for _, line in ipairs(lines) do
 		local target = ''
-		local tChar = ''
-		local sChar = ''
-
-		-- if dir > 0 then
-		-- 	if eCol == v:len() then
-		-- 		target = ' '
-		-- 	else
-		-- 		target = string.sub(v, eCol + 1 , eCol + 1)
-		-- 	end
-
-		-- 	selected = string.sub(v, sCol, eCol)
-		-- 	prefix = string.sub(v, 1, sCol - 1)
-		-- 	suffix = string.sub(v, eCol + 2)
-		-- else
-		-- 	if col == 0 then
-		-- 		return
-		-- 	end
-
-		-- 	target = string.sub(v, sCol - 1, sCol - 1)
-		-- 	selected = string.sub(v, sCol, eCol)
-		-- 	prefix = string.sub(v, 1, sCol - 2)
-		-- 	suffix = string.sub(v, eCol + 1)
-		-- end
-		-- Remove trailing spaces from the lines before
-		-- inserting them into the results table
-		-- line = prefix..(dir > 0 and target..selected or selected..target)..suffix
-		-- line = line:gsub('%s+$', '')
-		-- Default
-		prefix = string.sub(line, 1, col + (dir > 0 and 0 or dir))
-
-		-- Unicode or tilde character
-		sChar = utils.curUnicodeOrTilde()
-		selected = utils.getVisualChar(sCol, eCol)
-
-		-- Check if target is unicode or tilde
-		-- move cursor to get the character
-		if dir < 0 then
-			vim.cmd(':normal! h')
-		end
-		tChar = utils.curUnicodeOrTilde()
-
-		-- Put a space if the character reaches the end of the line
-		-- Default
-		target = utils.getChar()
-		suffix = string.sub(line, col + (dir > 0 and 3 or 2))
-
-		-- Character under cursor is unicode or tilde
-		if utils.isTilde(sChar) or utils.isUnicode(sChar) then
-			if utils.isUnicode(sChar) then
-				suffix = utils.suffixUnicode(tChar, sChar, line, col, dir)
-			else
-				suffix = utils.suffixTilde(tChar, sChar, line, col, dir)
-			end
-		else
-			-- Target character is tilde or unicode
-			if utils.isTilde(tChar) or utils.isUnicode(tChar) then
-				if utils.isUnicode(tChar) then
-					suffix = utils.suffixUnicode(tChar, sChar, line, col, dir)
-				else
-					suffix = utils.suffixTilde(tChar, sChar, line, col, dir)
-				end
-			end
-		end
-
-		if utils.isTilde(tChar) or utils.isUnicode(tChar) then
-			if utils.isUnicode(tChar) then
-				prefix = string.sub(line, 1, col + (dir < 0 and -3 or 0))
-			else
-				prefix = string.sub(line, 1, col + (dir < 0 and -2 or 0))
-			end
-		end
-
-		-- Return cursor position to original
-		vim.api.nvim_win_set_cursor(0, { sRow, col })
 
 		if dir > 0 then
-			if col == line:len() - utils.calc_eolOffset(sChar) then
+			if eCol == line:len() then
 				target = ' '
+			else
+				target = string.sub(line, eCol + 1 , eCol + 1)
 			end
+
+			selected = string.sub(line, sCol, eCol)
+			prefix = string.sub(line, 1, sCol - 1)
+			suffix = string.sub(line, eCol + 2)
+		else
+			if col == 0 then
+				return
+			end
+
+			target = string.sub(line, sCol - 1, sCol - 1)
+			selected = string.sub(line, sCol, eCol)
+			prefix = string.sub(line, 1, sCol - 2)
+			suffix = string.sub(line, eCol + 1)
 		end
 
-		-- Remove trailing spaces before putting into the table
+		-- Remove trailing spaces from the lines before
+		-- inserting them into the results table
 		line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
-		line_res = line_res:gsub('%s+$', '')
+		line_res = line:gsub('%s+$', '')
 
-		table.insert(results, line)
+		table.insert(results, line_res)
 	end
 
 	vim.api.nvim_buf_set_lines(0, sRow - 1, eRow, true, results)
@@ -205,6 +147,7 @@ M.horzBlock = function(dir)
 
 	-- Update the visual area with the new position of the characters
 	vim.cmd('execute "normal! \\e\\e"')
+
 	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol)..'l' or '')
 	cmd_suffix = cmd_suffix..(eRow - sRow > 0 and (eRow - sRow)..'j' or '')
 	vim.cmd('execute "normal! \\<C-V>'..cmd_suffix..'"')
