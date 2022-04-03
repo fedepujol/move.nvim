@@ -1,3 +1,5 @@
+local utils = require('utils')
+
 local M = {}
 
 -- Moves the character under the cursor to the left or right
@@ -13,23 +15,69 @@ M.horzChar = function(dir)
 	local suffix = ''
 	local result = {}
 	local line_res = ''
+	local selected = ''
+
+	local sChar = ''
+	local tChar = ''
 
 	-- Checks line limits with the direction
 	if dir < 0 and col < 1 then
 		return
 	end
 
-	local selected = string.sub(line, col + 1, col + 1)
+	-- Default
+	prefix = string.sub(line, 1, col + (dir > 0 and 0 or dir))
+
+	-- Unicode or tilde character
+	sChar = utils.curUnicodeOrTilde()
+	selected = utils.getChar()
+
+	-- Check if target is unicode or tilde
+	-- move cursor to get the character
+	if dir < 0 then
+		vim.cmd(':normal! h')
+	end
+	tChar = utils.curUnicodeOrTilde()
 
 	-- Put a space if the character reaches the end of the line
-	if col == line:len() - 1 and dir > 0 then
-		target = ' '
+	-- Default
+	target = utils.getChar()
+	suffix = string.sub(line, col + (dir > 0 and 3 or 2))
+
+	-- Character under cursor is unicode or tilde
+	if utils.isTilde(sChar) or utils.isUnicode(sChar) then
+		if utils.isUnicode(sChar) then
+			suffix = utils.suffixUnicode(tChar, sChar, line, col, dir)
+		else
+			suffix = utils.suffixTilde(tChar, sChar, line, col, dir)
+		end
 	else
-		target = string.sub(line, col + 1 + dir, col + 1 + dir)
+		-- Target character is tilde or unicode
+		if utils.isTilde(tChar) or utils.isUnicode(tChar) then
+			if utils.isUnicode(tChar) then
+				suffix = utils.suffixUnicode(tChar, sChar, line, col, dir)
+			else
+				suffix = utils.suffixTilde(tChar, sChar, line, col, dir)
+			end
+		end
 	end
 
-	prefix = string.sub(line, 1, col + (dir > 0 and 0 or -1))
-	suffix = string.sub(line, col + (dir > 0 and 3 or 2))
+	if utils.isTilde(tChar) or utils.isUnicode(tChar) then
+		if utils.isUnicode(tChar) then
+			prefix = string.sub(line, 1, col + (dir < 0 and -3 or 0))
+		else
+			prefix = string.sub(line, 1, col + (dir < 0 and -2 or 0))
+		end
+	end
+
+	-- Return cursor position to original
+	vim.api.nvim_win_set_cursor(0, { sRow, col })
+
+	if dir > 0 then
+		if col == line:len() - utils.calc_eolOffset(sChar) then
+			target = ' '
+		end
+	end
 
 	-- Remove trailing spaces before putting into the table
 	line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
@@ -39,7 +87,7 @@ M.horzChar = function(dir)
 
 	-- Update the line with the new one and update cursor position
 	vim.api.nvim_buf_set_lines(0, sRow - 1, sRow, true, result)
-	vim.api.nvim_win_set_cursor(0, { sRow, col + dir })
+	vim.api.nvim_win_set_cursor(0, { sRow, col + utils.cursor_offset(tChar, sChar, dir)})
 end
 
 -- Moves the visual area left or right
@@ -55,42 +103,43 @@ M.horzBlock = function(dir)
 	local eRow = vim.fn.line("'>")
 
 	local lines = vim.api.nvim_buf_get_lines(0, sRow - 1, eRow, true)
-	local line = ''
+	local line_res = ''
 	local selected = ''
 	local prefix = ''
 	local suffix = ''
 	local results = {}
 
 	-- Iterates over the lines of the visual area
-	for _, v in ipairs(lines) do
+	for _, line in ipairs(lines) do
 		local target = ''
 
 		if dir > 0 then
-			if eCol == v:len() then
+			if eCol == line:len() then
 				target = ' '
 			else
-				target = string.sub(v, eCol + 1 , eCol + 1)
+				target = string.sub(line, eCol + 1 , eCol + 1)
 			end
 
-			selected = string.sub(v, sCol, eCol)
-			prefix = string.sub(v, 1, sCol - 1)
-			suffix = string.sub(v, eCol + 2)
+			selected = string.sub(line, sCol, eCol)
+			prefix = string.sub(line, 1, sCol - 1)
+			suffix = string.sub(line, eCol + 2)
 		else
 			if col == 0 then
 				return
 			end
 
-			target = string.sub(v, sCol - 1, sCol - 1)
-			selected = string.sub(v, sCol, eCol)
-			prefix = string.sub(v, 1, sCol - 2)
-			suffix = string.sub(v, eCol + 1)
+			target = string.sub(line, sCol - 1, sCol - 1)
+			selected = string.sub(line, sCol, eCol)
+			prefix = string.sub(line, 1, sCol - 2)
+			suffix = string.sub(line, eCol + 1)
 		end
+
 		-- Remove trailing spaces from the lines before
 		-- inserting them into the results table
-		line = prefix..(dir > 0 and target..selected or selected..target)..suffix
-		line = line:gsub('%s+$', '')
+		line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
+		line_res = line:gsub('%s+$', '')
 
-		table.insert(results, line)
+		table.insert(results, line_res)
 	end
 
 	vim.api.nvim_buf_set_lines(0, sRow - 1, eRow, true, results)
@@ -98,6 +147,7 @@ M.horzBlock = function(dir)
 
 	-- Update the visual area with the new position of the characters
 	vim.cmd('execute "normal! \\e\\e"')
+
 	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol)..'l' or '')
 	cmd_suffix = cmd_suffix..(eRow - sRow > 0 and (eRow - sRow)..'j' or '')
 	vim.cmd('execute "normal! \\<C-V>'..cmd_suffix..'"')
