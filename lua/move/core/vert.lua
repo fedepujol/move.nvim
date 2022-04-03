@@ -1,4 +1,4 @@
-local utils = require('utils')
+local utils = require('move.utils')
 
 local M = {}
 
