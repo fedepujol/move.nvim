@@ -104,42 +104,42 @@ M.horzBlock = function(dir)
 	local eRow = vim.fn.line("'>")
 
 	local lines = vim.api.nvim_buf_get_lines(0, sRow - 1, eRow, true)
-	local line = ''
+	local new_line = ''
 	local selected = ''
 	local prefix = ''
 	local suffix = ''
 	local results = {}
 
 	-- Iterates over the lines of the visual area
-	for _, v in ipairs(lines) do
+	for _, line in ipairs(lines) do
 		local target = ''
 
 		if dir > 0 then
-			if eCol == v:len() then
+			if eCol == line:len() then
 				target = ' '
 			else
-				target = string.sub(v, eCol + 1, eCol + 1)
+				target = string.sub(line, eCol + 1, eCol + 1)
 			end
 
-			selected = string.sub(v, sCol, eCol)
-			prefix = string.sub(v, 1, sCol - 1)
-			suffix = string.sub(v, eCol + 2)
+			selected = string.sub(line, sCol, eCol)
+			prefix = string.sub(line, 1, sCol - 1)
+			suffix = string.sub(line, eCol + 2)
 		else
 			if col == 0 then
 				return
 			end
 
-			target = string.sub(v, sCol - 1, sCol - 1)
-			selected = string.sub(v, sCol, eCol)
-			prefix = string.sub(v, 1, sCol - 2)
-			suffix = string.sub(v, eCol + 1)
+			target = string.sub(line, sCol - 1, sCol - 1)
+			selected = string.sub(line, sCol, eCol)
+			prefix = string.sub(line, 1, sCol - 2)
+			suffix = string.sub(line, eCol + 1)
 		end
 		-- Remove trailing spaces from the lines before
 		-- inserting them into the results table
-		line = prefix .. (dir > 0 and target .. selected or selected .. target) .. suffix
-		line = line:gsub('%s+$', '')
+		new_line = prefix .. (dir > 0 and target .. selected or selected .. target) .. suffix
+		new_line = new_line:gsub('%s+$', '')
 
-		table.insert(results, line)
+		table.insert(results, new_line)
 	end
 
 	vim.api.nvim_buf_set_lines(0, sRow - 1, eRow, true, results)
