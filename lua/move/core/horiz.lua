@@ -1,4 +1,4 @@
-local utils = require('utils')
+local utils = require('move.utils')
 
 local M = {}
 
@@ -80,15 +80,16 @@ M.horzChar = function(dir)
 	end
 
 	-- Remove trailing spaces before putting into the table
-	line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
+	line_res = prefix .. (dir > 0 and target .. selected or selected .. target) .. suffix
 	line_res = line_res:gsub('%s+$', '')
 
 	table.insert(result, line_res)
 
 	-- Update the line with the new one and update cursor position
 	vim.api.nvim_buf_set_lines(0, sRow - 1, sRow, true, result)
-	vim.api.nvim_win_set_cursor(0, { sRow, col + utils.cursor_offset(tChar, sChar, dir)})
+	vim.api.nvim_win_set_cursor(0, { sRow, col + utils.cursor_offset(tChar, sChar, dir) })
 end
+
 
 -- Moves the visual area left or right
 -- and keeps it selected
@@ -103,43 +104,42 @@ M.horzBlock = function(dir)
 	local eRow = vim.fn.line("'>")
 
 	local lines = vim.api.nvim_buf_get_lines(0, sRow - 1, eRow, true)
-	local line_res = ''
+	local line = ''
 	local selected = ''
 	local prefix = ''
 	local suffix = ''
 	local results = {}
 
 	-- Iterates over the lines of the visual area
-	for _, line in ipairs(lines) do
+	for _, v in ipairs(lines) do
 		local target = ''
 
 		if dir > 0 then
-			if eCol == line:len() then
+			if eCol == v:len() then
 				target = ' '
 			else
-				target = string.sub(line, eCol + 1 , eCol + 1)
+				target = string.sub(v, eCol + 1, eCol + 1)
 			end
 
-			selected = string.sub(line, sCol, eCol)
-			prefix = string.sub(line, 1, sCol - 1)
-			suffix = string.sub(line, eCol + 2)
+			selected = string.sub(v, sCol, eCol)
+			prefix = string.sub(v, 1, sCol - 1)
+			suffix = string.sub(v, eCol + 2)
 		else
 			if col == 0 then
 				return
 			end
 
-			target = string.sub(line, sCol - 1, sCol - 1)
-			selected = string.sub(line, sCol, eCol)
-			prefix = string.sub(line, 1, sCol - 2)
-			suffix = string.sub(line, eCol + 1)
+			target = string.sub(v, sCol - 1, sCol - 1)
+			selected = string.sub(v, sCol, eCol)
+			prefix = string.sub(v, 1, sCol - 2)
+			suffix = string.sub(v, eCol + 1)
 		end
-
 		-- Remove trailing spaces from the lines before
 		-- inserting them into the results table
-		line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
-		line_res = line:gsub('%s+$', '')
+		line = prefix .. (dir > 0 and target .. selected or selected .. target) .. suffix
+		line = line:gsub('%s+$', '')
 
-		table.insert(results, line_res)
+		table.insert(results, line)
 	end
 
 	vim.api.nvim_buf_set_lines(0, sRow - 1, eRow, true, results)
@@ -147,10 +147,9 @@ M.horzBlock = function(dir)
 
 	-- Update the visual area with the new position of the characters
 	vim.cmd('execute "normal! \\e\\e"')
-
-	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol)..'l' or '')
-	cmd_suffix = cmd_suffix..(eRow - sRow > 0 and (eRow - sRow)..'j' or '')
-	vim.cmd('execute "normal! \\<C-V>'..cmd_suffix..'"')
+	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol) .. 'l' or '')
+	cmd_suffix = cmd_suffix .. (eRow - sRow > 0 and (eRow - sRow) .. 'j' or '')
+	vim.cmd('execute "normal! \\<C-V>' .. cmd_suffix .. '"')
 end
 
 return M

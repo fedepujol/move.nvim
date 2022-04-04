@@ -1,5 +1,5 @@
-local move_vert = require('core.vert')
-local move_hor = require('core.horiz')
+local move_hor = require('move.core.horiz')
+local move_vert = require('move.core.vert')
 
 return {
 	MoveLine = move_vert.moveLine,
