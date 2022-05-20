@@ -103,47 +103,36 @@ M.horzBlock = function(dir)
 	local sRow, col = unpack(vim.api.nvim_win_get_cursor(0))
 	local eRow = vim.fn.line("'>")
 
-	local lines = vim.api.nvim_buf_get_lines(0, sRow - 1, eRow, true)
-	local new_line = ''
-	local selected = ''
-	local prefix = ''
-	local suffix = ''
-	local results = {}
-
-	-- Iterates over the lines of the visual area
-	for _, line in ipairs(lines) do
-		local target = ''
-
-		if dir > 0 then
-			if eCol == line:len() then
-				target = ' '
-			else
-				target = string.sub(line, eCol + 1, eCol + 1)
-			end
-
-			selected = string.sub(line, sCol, eCol)
-			prefix = string.sub(line, 1, sCol - 1)
-			suffix = string.sub(line, eCol + 2)
-		else
-			if col == 0 then
-				return
-			end
-
-			target = string.sub(line, sCol - 1, sCol - 1)
-			selected = string.sub(line, sCol, eCol)
-			prefix = string.sub(line, 1, sCol - 2)
-			suffix = string.sub(line, eCol + 1)
-		end
-		-- Remove trailing spaces from the lines before
-		-- inserting them into the results table
-		new_line = prefix .. (dir > 0 and target .. selected or selected .. target) .. suffix
-		new_line = new_line:gsub('%s+$', '')
-
-		table.insert(results, new_line)
+	-- Checks line limits with the direction
+	if dir < 0 and col < 1 then
+		vim.cmd('execute "normal! \\<C-V>' .. (eCol - sCol) .. 'l' .. (eRow - sRow) .. 'j' .. '"')
+		return
 	end
 
-	vim.api.nvim_buf_set_lines(0, sRow - 1, eRow, true, results)
-	vim.api.nvim_win_set_cursor(0, { sRow, (sCol - 1) + dir })
+	local offset_composite = 0
+	vim.api.nvim_win_set_cursor(0, { sRow, sCol - 1})
+
+	for i = 1, eCol - sCol, 1 do
+		local comp = utils.isCharComposite()
+		print(comp)
+		if comp then
+			offset_composite = offset_composite + 1
+		end
+
+		vim.api.nvim_win_set_cursor(0, { sRow, (sCol - 1) + i })
+	end
+	print('offset_composite:'..offset_composite)
+
+	vim.api.nvim_win_set_cursor(0, { sRow, sCol - 1})
+	vim.cmd('execute "normal! \\<C-V>' .. (eCol - sCol) .. 'l' .. (eRow - sRow) .. 'j' .. '"')
+	vim.cmd(':normal! x')
+
+	if dir > 0 then
+		vim.cmd(':normal! p')
+	else
+		vim.api.nvim_win_set_cursor(0, { sRow, sCol - 2 })
+		vim.cmd(':normal! P')
+	end
 
 	-- Update the visual area with the new position of the characters
 	vim.cmd('execute "normal! \\e\\e"')

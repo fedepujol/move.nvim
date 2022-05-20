@@ -149,6 +149,12 @@ M.isUnicode = function(char)
  	return char:len() > 5
 end
 
+M.isCharComposite = function()
+	local char = vim.api.nvim_exec(':normal! g8', true)
+	char = string.gsub(char, '%s+$', '')
+	return char:len() > 2
+end
+
 M.getChar = function()
 	vim.cmd(':normal! x')
 	return vim.fn.getreg('"0')
