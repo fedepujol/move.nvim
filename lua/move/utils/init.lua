@@ -160,6 +160,12 @@ M.getChar = function()
 	return vim.fn.getreg('"0')
 end
 
+M.getCharNew = function()
+	local char = vim.api.nvim_exec(':normal! g8', true)
+	char = string.gsub(char, '%s+$', '')
+	return char
+end
+
 M.getVisualChar = function(sCol, eCol)
 	vim.cmd(':normal! v'..(eCol - sCol)..'l')
 	vim.cmd(':normal! x')
@@ -239,6 +245,15 @@ M.suffixTilde = function(tChar, sChar, line, col, dir)
 	suffix = string.sub(line, col + offset)
 
 	return suffix
+end
+
+M.getSize = function(char)
+	local t = {}
+
+	for w in string.gmatch(char, "%w+") do
+		table.insert(t, w)
+	end
+	return #t
 end
 
 return M

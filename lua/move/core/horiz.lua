@@ -110,21 +110,26 @@ M.horzBlock = function(dir)
 	end
 
 	local offset_composite = 0
-	vim.api.nvim_win_set_cursor(0, { sRow, sCol - 1})
+	vim.api.nvim_win_set_cursor(0, { sRow, sCol - 1 })
 
-	for i = 1, eCol - sCol, 1 do
+	local i = sCol
+
+	while i < eCol + 1 do
 		local comp = utils.isCharComposite()
-		print(comp)
 		if comp then
-			offset_composite = offset_composite + 1
+			local char = utils.getCharNew()
+			local offset = utils.getSize(char)
+			offset_composite = offset_composite + utils.getSize(char) - 1
+			print('col '..i, 'offComp '..offset_composite, 'offset '..offset, 'char '..char)
+			i = i + offset
+		else
+			i = i + 1
 		end
-
-		vim.api.nvim_win_set_cursor(0, { sRow, (sCol - 1) + i })
+		vim.api.nvim_win_set_cursor(0, { sRow, i - 1 })
 	end
-	print('offset_composite:'..offset_composite)
 
-	vim.api.nvim_win_set_cursor(0, { sRow, sCol - 1})
-	vim.cmd('execute "normal! \\<C-V>' .. (eCol - sCol) .. 'l' .. (eRow - sRow) .. 'j' .. '"')
+	vim.api.nvim_win_set_cursor(0, { sRow, sCol - 1 })
+	vim.cmd('execute "normal! \\<C-V>' .. (eCol - sCol - offset_composite) .. 'l' .. (eRow - sRow) .. 'j' .. '"')
 	vim.cmd(':normal! x')
 
 	if dir > 0 then
@@ -136,7 +141,7 @@ M.horzBlock = function(dir)
 
 	-- Update the visual area with the new position of the characters
 	vim.cmd('execute "normal! \\e\\e"')
-	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol) .. 'l' or '')
+	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol - offset_composite) .. 'l' or '')
 	cmd_suffix = cmd_suffix .. (eRow - sRow > 0 and (eRow - sRow) .. 'j' or '')
 	vim.cmd('execute "normal! \\<C-V>' .. cmd_suffix .. '"')
 end
