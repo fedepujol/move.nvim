@@ -29,9 +29,20 @@ M.moveLine = function(dir)
 
 	-- General Case
 	if line >= 1 and line <= last_line then
-		local amount = utils.calc_indent(line + dir, dir)
-		utils.swap_line(line, line + dir)
-		utils.indent(amount, line + dir)
+		local target = line
+		local fold = -1
+		if dir > 0 then
+			fold = vim.fn.foldclosedend(line + dir)
+		else
+			fold = vim.fn.foldclosed(line + dir)
+		end
+		if fold ~= -1 then
+			target = fold
+		end
+
+		local amount = utils.calc_indent(target + dir, dir)
+		utils.swap_line(line, target + dir)
+		utils.indent(amount, target + dir)
 	end
 end
 
@@ -58,11 +69,11 @@ M.moveBlock = function(dir, line1, line2)
 
 	-- Edges
 	if vSRow == 0 and dir < 0 then
-		vim.api.nvim_exec(':normal! '..vSRow..'ggV'..(vERow)..'gg', false)
+		vim.api.nvim_exec(':normal! ' .. vSRow .. 'ggV' .. vERow .. 'gg', false)
 		return
 	end
 	if vERow == last_line and dir > 0 then
-		vim.api.nvim_exec(':normal! '..(vSRow + 1)..'ggV'..(vERow + dir)..'gg', false)
+		vim.api.nvim_exec(':normal! ' .. (vSRow + 1) .. 'ggV' .. (vERow + dir) .. 'gg', false)
 		return
 	end
 
