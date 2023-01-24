@@ -32,7 +32,7 @@ M.horzChar = function(dir)
 	suffix = string.sub(line, col + (dir > 0 and 3 or 2))
 
 	-- Remove trailing spaces before putting into the table
-	line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
+	line_res = prefix .. (dir > 0 and target .. selected or selected .. target) .. suffix
 	line_res = line_res:gsub('%s+$', '')
 
 	table.insert(result, line_res)
@@ -69,7 +69,7 @@ M.horzBlock = function(dir)
 			if eCol == v:len() then
 				target = ' '
 			else
-				target = string.sub(v, eCol + 1 , eCol + 1)
+				target = string.sub(v, eCol + 1, eCol + 1)
 			end
 
 			selected = string.sub(v, sCol, eCol)
@@ -87,7 +87,7 @@ M.horzBlock = function(dir)
 		end
 		-- Remove trailing spaces from the lines before
 		-- inserting them into the results table
-		line = prefix..(dir > 0 and target..selected or selected..target)..suffix
+		line = prefix .. (dir > 0 and target .. selected or selected .. target) .. suffix
 		line = line:gsub('%s+$', '')
 
 		table.insert(results, line)
@@ -98,9 +98,35 @@ M.horzBlock = function(dir)
 
 	-- Update the visual area with the new position of the characters
 	vim.cmd('execute "normal! \\e\\e"')
-	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol)..'l' or '')
-	cmd_suffix = cmd_suffix..(eRow - sRow > 0 and (eRow - sRow)..'j' or '')
-	vim.cmd('execute "normal! \\<C-V>'..cmd_suffix..'"')
+	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol) .. 'l' or '')
+	cmd_suffix = cmd_suffix .. (eRow - sRow > 0 and (eRow - sRow) .. 'j' or '')
+	vim.cmd('execute "normal! \\<C-V>' .. cmd_suffix .. '"')
+end
+
+
+--- Moves a word to the given direction
+---@param dir number
+M.horzWord = function(dir)
+	-- Find cursor position
+	local cursor = vim.api.nvim_win_get_cursor(0)
+	local bufnr = vim.api.nvim_get_current_buf()
+
+	-- Use vim to select the word
+	vim.cmd(':normal! viw')
+
+	-- Get boundries
+	local sCol = vim.fn.col("'<")
+	local eCol = vim.fn.col("'>")
+
+	-- Exit visual mode
+	vim.cmd('execute "normal! \\e\\e"')
+
+	-- Re position the cursor to original position
+	vim.api.nvim_win_set_cursor(0, cursor)
+
+	local line = vim.api.nvim_get_current_line()
+	local word = line:sub(sCol, eCol)
+	vim.pretty_print(word)
 end
 
 return M
