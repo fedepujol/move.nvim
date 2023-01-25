@@ -84,6 +84,24 @@ vim.keymap.set('v', '<A-h>', ':MoveHBlock(-1)<CR>', opts)
 vim.keymap.set('v', '<A-l>', ':MoveHBlock(1)<CR>', opts)
 ```
 
+
+## Integration
+
+### [Legendary.nvim](https://github.com/mrjones2014/legendary.nvim)
+Thanks to [hinell](https://github.com/hinell) to point this out:
+
+> **Note**: Don't setup the keys like above if you're using legendary
+```lua
+require('legendary').setup({
+    keymaps = {
+        { "<A-k>", ":MoveLine -1", description = "Line: move up (move.nvim)", opts = { noremap = true }},
+        { "<A-j>", ":MoveLine 1", description = "Line: move down (move.nvim)", opts = { noremap = true }},
+        ...
+    }
+})
+```
+
+
 ## Mention
 
 There is an original and more feature rich plugin (written in VimScript):
