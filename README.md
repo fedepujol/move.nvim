@@ -4,15 +4,15 @@ Gain the power to move lines and blocks!
 
 ## Vertical Movement
 
-![vert-line-move](media/move_line.gif)
+![vert_line](https://user-images.githubusercontent.com/26419570/214643592-9c7ae7bf-c26f-4698-986b-883c2b7a1206.gif)
 
-![vert-block-move](media/move_block.gif)
+![vert_block](https://user-images.githubusercontent.com/26419570/214643489-07ed1aa3-354c-457c-81c2-466bf84b2332.gif)
 
 ## Horizontal Movement
 
-![hor-char](media/hor_character.gif)
+![hor_char](https://user-images.githubusercontent.com/26419570/214643419-461da2ce-bd98-4946-99a3-b063300d438c.gif)
 
-![hor-block](media/hor_block.gif)
+![hor_block](https://user-images.githubusercontent.com/26419570/214643129-e013b118-e438-4dee-a82c-a98a1a4aadfa.gif)
 
 ## Requirements
 
