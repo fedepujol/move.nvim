@@ -3,7 +3,6 @@ if vim.g.move_nvim_loaded then
 end
 
 local cpo = vim.opt.cpoptions
-vim.pretty_print(cpo)
 vim.cmd('set cpo&vim')
 
 vim.api.nvim_create_user_command("MoveLine",
