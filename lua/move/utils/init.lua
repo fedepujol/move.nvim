@@ -32,10 +32,10 @@ end
 ---@param source number Position to get the lines.
 ---@param target number Position to end the line.
 M.swap_line = function(source, target)
-	local current_line = vim.api.nvim_get_current_line()
+	local current_line = vim.fn.line('.')
 	local col = vim.api.nvim_win_get_cursor(0)[2]
-	local lSource = ''
-	local lTarget = ''
+	local lSource = {}
+	local lTarget = {}
 
 	if source == nil and target == nil then
 		error('Invalid lines')
@@ -137,6 +137,80 @@ M.calc_fold = function(line, dir)
 	end
 
 	return offset
+end
+
+M.cursor_col = function()
+	return vim.api.nvim_win_get_cursor(0)[2] + 1
+end
+
+M.calc_end_pos = function(word, oCursor)
+	local offset = M.cursor_col()
+
+	if offset ~= word.sCol then
+		word.eCol = offset - 2
+		vim.api.nvim_win_set_cursor(0, { oCursor[1], word.eCol })
+	end
+end
+
+---
+---@param word table
+---@param oCursor table
+M.cursor_word_cols = function(word, oCursor)
+	-- Move to the end and save the position
+	vim.cmd([[:normal! e]])
+	word.eCol = M.cursor_col()
+
+	-- Validate boundries
+	vim.cmd([[:normal! b]])
+	M.calc_end_pos(word, oCursor)
+end
+
+---
+---@param word table
+---@param oCursor table
+---@param dir number
+M.other_word_cols = function(word, oCursor, dir)
+	-- Go to begining of second word
+	-- Depending of the direction
+	-- we go forward or backard
+	if dir > 0 then
+		vim.cmd([[:normal! w]])
+	elseif dir < 0 then
+		vim.cmd([[:normal! b]])
+	end
+
+	-- Save begining position
+	word.sCol = M.cursor_col()
+
+	-- Move to the end and save the position
+	vim.cmd([[:normal! e]])
+	word.eCol = M.cursor_col()
+
+	-- Validate boundries
+	vim.cmd([[:normal! b]])
+	M.calc_end_pos(word, oCursor)
+end
+
+--- Replaces the cursor line, with the words passed swaped.
+---@param words table
+---@param line string
+---@param dir number
+M.swap_words = function(words, line, dir)
+	local begL = ''
+	local sep = ''
+	local endL = ''
+
+	if dir > 0 then
+		begL = line:sub(0, words.cursor.sCol - 1)
+		sep = line:sub(words.cursor.eCol + 1, words.other.sCol - 1)
+		endL = line:sub(words.other.eCol + 1, #line)
+	elseif dir < 0 then
+		begL = line:sub(0, words.other.sCol - 1)
+		sep = line:sub(words.other.eCol + 1, words.cursor.sCol - 1)
+		endL = line:sub(words.cursor.eCol + 1, #line)
+	end
+
+	vim.api.nvim_set_current_line(begL .. words.other.value .. sep .. words.cursor.value .. endL)
 end
 
 return M

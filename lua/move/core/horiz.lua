@@ -1,3 +1,5 @@
+local utils = require('move.utils')
+
 local M = {}
 
 -- Moves the character under the cursor to the left or right
@@ -103,30 +105,51 @@ M.horzBlock = function(dir)
 	vim.cmd('execute "normal! \\<C-V>' .. cmd_suffix .. '"')
 end
 
-
 --- Moves a word to the given direction
 ---@param dir number
 M.horzWord = function(dir)
-	-- Find cursor position
-	local cursor = vim.api.nvim_win_get_cursor(0)
-	local bufnr = vim.api.nvim_get_current_buf()
+	local words = { cursor = {}, other = {}, border = false }
 
-	-- Use vim to select the word
-	vim.cmd(':normal! viw')
-
-	-- Get boundries
-	local sCol = vim.fn.col("'<")
-	local eCol = vim.fn.col("'>")
-
-	-- Exit visual mode
-	vim.cmd('execute "normal! \\e\\e"')
-
-	-- Re position the cursor to original position
-	vim.api.nvim_win_set_cursor(0, cursor)
-
+	-- Line
 	local line = vim.api.nvim_get_current_line()
-	local word = line:sub(sCol, eCol)
-	vim.pretty_print(word)
+
+	-- Original cursor position
+	local oCursor = vim.api.nvim_win_get_cursor(0)
+
+	if oCursor[2] ~= 0 then
+		-- Go to begining of the word
+		vim.cmd([[:normal! viwy]])
+
+		-- Save position of word
+		words.cursor.sCol = utils.cursor_col()
+		utils.cursor_word_cols(words.cursor, oCursor)
+
+		if words.cursor.eCol ~= #line then
+			utils.other_word_cols(words.other, oCursor, dir)
+		else
+			words.border = true
+		end
+	else
+		-- We know we are in the first char of the line
+		words.cursor.sCol = 1
+
+		utils.cursor_word_cols(words.cursor, oCursor)
+
+		if words.cursor.eCol ~= #line then
+			utils.other_word_cols(words.other, oCursor, dir)
+		else
+			words.border = true
+		end
+	end
+
+	-- Re-position cursor
+	vim.api.nvim_win_set_cursor(0, oCursor)
+
+	words.cursor.value = line:sub(words.cursor.sCol, words.cursor.eCol)
+	if not words.border then
+		words.other.value = line:sub(words.other.sCol, words.other.eCol)
+		utils.swap_words(words, line, dir)
+	end
 end
 
 return M
