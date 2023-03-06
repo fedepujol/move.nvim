@@ -191,26 +191,34 @@ M.other_word_cols = function(word, oCursor, dir)
 	M.calc_end_pos(word, oCursor)
 end
 
---- Replaces the cursor line, with the words passed swaped.
----@param words table
----@param line string
----@param dir number
-M.swap_words = function(words, line, dir)
+local function rebuild_line(words, line, dir)
 	local begL = ''
 	local sep = ''
 	local endL = ''
+	local new_line = ''
 
 	if dir > 0 then
 		begL = line:sub(0, words.cursor.sCol - 1)
 		sep = line:sub(words.cursor.eCol + 1, words.other.sCol - 1)
 		endL = line:sub(words.other.eCol + 1, #line)
+		new_line = begL .. words.other.value .. sep .. words.cursor.value .. endL
 	elseif dir < 0 then
 		begL = line:sub(0, words.other.sCol - 1)
 		sep = line:sub(words.other.eCol + 1, words.cursor.sCol - 1)
 		endL = line:sub(words.cursor.eCol + 1, #line)
+		new_line = begL .. words.cursor.value .. sep .. words.other.value .. endL
 	end
 
-	vim.api.nvim_set_current_line(begL .. words.other.value .. sep .. words.cursor.value .. endL)
+	return new_line
+end
+
+--- Replaces the cursor line, with the words passed swaped.
+---@param words table
+---@param line string
+---@param dir number
+M.swap_words = function(words, line, dir)
+	local new_line = rebuild_line(words, line, dir)
+	vim.api.nvim_set_current_line(new_line)
 end
 
 return M
