@@ -5,5 +5,6 @@ return {
 	MoveLine = move_vert.moveLine,
 	MoveBlock = move_vert.moveBlock,
 	MoveHChar = move_hor.horzChar,
-	MoveHBlock = move_hor.horzBlock
+	MoveHBlock = move_hor.horzBlock,
+	MoveWord = move_hor.horzWord
 }

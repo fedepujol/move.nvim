@@ -1,3 +1,5 @@
+local utils = require('move.utils')
+
 local M = {}
 
 -- Moves the character under the cursor to the left or right
@@ -32,7 +34,7 @@ M.horzChar = function(dir)
 	suffix = string.sub(line, col + (dir > 0 and 3 or 2))
 
 	-- Remove trailing spaces before putting into the table
-	line_res = prefix..(dir > 0 and target..selected or selected..target)..suffix
+	line_res = prefix .. (dir > 0 and target .. selected or selected .. target) .. suffix
 	line_res = line_res:gsub('%s+$', '')
 
 	table.insert(result, line_res)
@@ -69,7 +71,7 @@ M.horzBlock = function(dir)
 			if eCol == v:len() then
 				target = ' '
 			else
-				target = string.sub(v, eCol + 1 , eCol + 1)
+				target = string.sub(v, eCol + 1, eCol + 1)
 			end
 
 			selected = string.sub(v, sCol, eCol)
@@ -87,7 +89,7 @@ M.horzBlock = function(dir)
 		end
 		-- Remove trailing spaces from the lines before
 		-- inserting them into the results table
-		line = prefix..(dir > 0 and target..selected or selected..target)..suffix
+		line = prefix .. (dir > 0 and target .. selected or selected .. target) .. suffix
 		line = line:gsub('%s+$', '')
 
 		table.insert(results, line)
@@ -98,9 +100,76 @@ M.horzBlock = function(dir)
 
 	-- Update the visual area with the new position of the characters
 	vim.cmd('execute "normal! \\e\\e"')
-	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol)..'l' or '')
-	cmd_suffix = cmd_suffix..(eRow - sRow > 0 and (eRow - sRow)..'j' or '')
-	vim.cmd('execute "normal! \\<C-V>'..cmd_suffix..'"')
+	local cmd_suffix = (eCol - sCol > 0 and (eCol - sCol) .. 'l' or '')
+	cmd_suffix = cmd_suffix .. (eRow - sRow > 0 and (eRow - sRow) .. 'j' or '')
+	vim.cmd('execute "normal! \\<C-V>' .. cmd_suffix .. '"')
+end
+
+--- Moves a word to the given direction
+---@param dir number
+M.horzWord = function(dir)
+	local fBorder = false
+	local words = { cursor = {}, other = {} }
+
+	-- Line
+	local line = vim.api.nvim_get_current_line()
+
+	-- Original cursor position
+	local oCursor = vim.api.nvim_win_get_cursor(0)
+
+	if oCursor[2] == 0 and dir < 0 then
+		fBorder = true
+		return
+	end
+
+	utils.calc_cols(words.cursor)
+
+	if oCursor[2] ~= 0 then
+		-- If the cursor word is the whole line or
+		-- don't do anything
+		if words.cursor.sCol == 1 and words.cursor.eCol == #line then
+			fBorder = true
+			return
+		end
+
+		if words.cursor.eCol == #line and dir > 0 then
+			fBorder = true
+			return
+		end
+
+		if words.cursor.sCol == 1 and dir < 0 then
+			fBorder = true
+			return
+		end
+
+		utils.calc_word_cols(words.other, dir)
+	else
+		if words.cursor.eCol ~= #line then
+			vim.cmd([[:normal! W]])
+			utils.calc_cols(words.other)
+		else
+			fBorder = true
+		end
+	end
+
+	-- Re-position cursor
+	vim.api.nvim_win_set_cursor(0, oCursor)
+
+	if not fBorder then
+		words.cursor.value = line:sub(words.cursor.sCol, words.cursor.eCol)
+		words.other.value = line:sub(words.other.sCol, words.other.eCol)
+
+		utils.swap_words(words, line, dir)
+
+		if dir > 0 then
+			vim.cmd([[:normal! W]])
+		else
+			vim.cmd([[:normal! B]])
+			if words.cursor.value:len() < words.other.value:len() then
+				vim.cmd([[:normal! B]])
+			end
+		end
+	end
 end
 
 return M

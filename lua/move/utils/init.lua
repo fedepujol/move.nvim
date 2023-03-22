@@ -32,10 +32,10 @@ end
 ---@param source number Position to get the lines.
 ---@param target number Position to end the line.
 M.swap_line = function(source, target)
-	local current_line = vim.api.nvim_get_current_line()
+	local current_line = vim.fn.line('.')
 	local col = vim.api.nvim_win_get_cursor(0)[2]
-	local lSource = ''
-	local lTarget = ''
+	local lSource = {}
+	local lTarget = {}
 
 	if source == nil and target == nil then
 		error('Invalid lines')
@@ -137,6 +137,65 @@ M.calc_fold = function(line, dir)
 	end
 
 	return offset
+end
+
+M.cursor_col = function()
+	return vim.api.nvim_win_get_cursor(0)[2] + 1
+end
+
+--- Calculates the start and end column of the word
+--by the lenght of the copy word
+---@param word table
+M.calc_cols = function(word)
+	vim.cmd([[:normal! viWy]])
+
+	-- Save position of word
+	word.sCol = M.cursor_col()
+	word.eCol = vim.fn.getreg("0"):len() + word.sCol - 1
+end
+
+---Moves the cursor forwards or backwards
+--by the direction and then calls calc_cols
+---@param word table
+---@param dir number
+M.calc_word_cols = function(word, dir)
+	if dir > 0 then
+		vim.cmd([[:normal! W]])
+	else
+		vim.cmd([[:normal! B]])
+	end
+
+	M.calc_cols(word)
+end
+
+local function rebuild_line(words, line, dir)
+	local begL = ''
+	local sep = ''
+	local endL = ''
+	local new_line = ''
+
+	if dir > 0 then
+		begL = line:sub(0, words.cursor.sCol - 1)
+		sep = line:sub(words.cursor.eCol + 1, words.other.sCol - 1)
+		endL = line:sub(words.other.eCol + 1, #line)
+		new_line = begL .. words.other.value .. sep .. words.cursor.value .. endL
+	elseif dir < 0 then
+		begL = line:sub(0, words.other.sCol - 1)
+		sep = line:sub(words.other.eCol + 1, words.cursor.sCol - 1)
+		endL = line:sub(words.cursor.eCol + 1, #line)
+		new_line = begL .. words.cursor.value .. sep .. words.other.value .. endL
+	end
+
+	return new_line
+end
+
+--- Replaces the cursor line, with the words passed swaped.
+---@param words table
+---@param line string
+---@param dir number
+M.swap_words = function(words, line, dir)
+	local new_line = rebuild_line(words, line, dir)
+	vim.api.nvim_set_current_line(new_line)
 end
 
 return M
