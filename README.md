@@ -4,15 +4,15 @@ Gain the power to move lines and blocks!
 
 ## Vertical Movement
 
-![vert-line-move](media/move_line.gif)
+![vert_line](https://user-images.githubusercontent.com/26419570/214643592-9c7ae7bf-c26f-4698-986b-883c2b7a1206.gif)
 
-![vert-block-move](media/move_block.gif)
+![vert_block](https://user-images.githubusercontent.com/26419570/214643489-07ed1aa3-354c-457c-81c2-466bf84b2332.gif)
 
 ## Horizontal Movement
 
-![hor-char](media/hor_character.gif)
+![hor_char](https://user-images.githubusercontent.com/26419570/214643419-461da2ce-bd98-4946-99a3-b063300d438c.gif)
 
-![hor-block](media/hor_block.gif)
+![hor_block](https://user-images.githubusercontent.com/26419570/214643129-e013b118-e438-4dee-a82c-a98a1a4aadfa.gif)
 
 ## Requirements
 
@@ -83,6 +83,24 @@ vim.keymap.set('v', '<A-k>', ':MoveBlock(-1)<CR>', opts)
 vim.keymap.set('v', '<A-h>', ':MoveHBlock(-1)<CR>', opts)
 vim.keymap.set('v', '<A-l>', ':MoveHBlock(1)<CR>', opts)
 ```
+
+
+## Integration
+
+### [Legendary.nvim](https://github.com/mrjones2014/legendary.nvim)
+Thanks to [hinell](https://github.com/hinell) to point this out:
+
+> **Note**: Don't setup the keys like above if you're using legendary
+```lua
+require('legendary').setup({
+    keymaps = {
+        { "<A-k>", ":MoveLine -1", description = "Line: move up (move.nvim)", opts = { noremap = true }},
+        { "<A-j>", ":MoveLine 1", description = "Line: move down (move.nvim)", opts = { noremap = true }},
+        ...
+    }
+})
+```
+
 
 ## Mention
 
