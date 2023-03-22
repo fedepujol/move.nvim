@@ -14,6 +14,9 @@ Gain the power to move lines and blocks!
 
 ![hor_block](https://user-images.githubusercontent.com/26419570/214643129-e013b118-e438-4dee-a82c-a98a1a4aadfa.gif)
 
+## Word Movement
+![word](https://user-images.githubusercontent.com/26419570/227013070-6c5e041c-c500-4944-8c83-79d5d54f6394.gif)
+
 ## Requirements
 
 This plugin works with NeoVim v0.5 or later.
@@ -48,6 +51,7 @@ The plugin provides the following commands:
 | MoveBlock | Moves a selected block of text, up or down | Visual |
 | MoveHChar | Moves the character under the cursor, left or right | Normal |
 | MoveHBlock | Moves a visual area, left or right | Visual |
+| MoveWord | Moves the word under the cursor forwards or backwards |
 
 ## Mappings
 
