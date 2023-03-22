@@ -108,6 +108,7 @@ end
 --- Moves a word to the given direction
 ---@param dir number
 M.horzWord = function(dir)
+	local fBorder = false
 	local words = { cursor = {}, other = {} }
 
 	-- Line
@@ -117,47 +118,57 @@ M.horzWord = function(dir)
 	local oCursor = vim.api.nvim_win_get_cursor(0)
 
 	if oCursor[2] == 0 and dir < 0 then
+		fBorder = true
 		return
 	end
 
+	utils.calc_cols(words.cursor)
+
 	if oCursor[2] ~= 0 then
-		-- Go to begining of the word
-		vim.cmd([[:normal! viwy]])
-
-		-- Save position of word
-		words.cursor.sCol = utils.cursor_col()
-		utils.cursor_word_cols(words.cursor, oCursor)
-
-		if words.cursor.eCol == #line and dir > 0 then
+		-- If the cursor word is the whole line or
+		-- don't do anything
+		if words.cursor.sCol == 1 and words.cursor.eCol == #line then
+			fBorder = true
 			return
 		end
 
-		if words.cursor.eCol ~= #line or dir < 0 then
-			utils.other_word_cols(words.other, oCursor, dir)
+		if words.cursor.eCol == #line and dir > 0 then
+			fBorder = true
+			return
 		end
+
+		if words.cursor.sCol == 1 and dir < 0 then
+			fBorder = true
+			return
+		end
+
+		utils.calc_word_cols(words.other, dir)
 	else
-		-- We know we are in the first char of the line
-		words.cursor.sCol = 1
-
-		utils.cursor_word_cols(words.cursor, oCursor)
-
 		if words.cursor.eCol ~= #line then
-			utils.other_word_cols(words.other, oCursor, dir)
+			vim.cmd([[:normal! W]])
+			utils.calc_cols(words.other)
+		else
+			fBorder = true
 		end
 	end
 
 	-- Re-position cursor
 	vim.api.nvim_win_set_cursor(0, oCursor)
 
-	words.cursor.value = line:sub(words.cursor.sCol, words.cursor.eCol)
-	words.other.value = line:sub(words.other.sCol, words.other.eCol)
+	if not fBorder then
+		words.cursor.value = line:sub(words.cursor.sCol, words.cursor.eCol)
+		words.other.value = line:sub(words.other.sCol, words.other.eCol)
 
-	utils.swap_words(words, line, dir)
+		utils.swap_words(words, line, dir)
 
-	if dir > 0 then
-		vim.cmd([[:normal! w]])
-	else
-		vim.cmd([[:normal! b]])
+		if dir > 0 then
+			vim.cmd([[:normal! W]])
+		else
+			vim.cmd([[:normal! B]])
+			if words.cursor.value:len() < words.other.value:len() then
+				vim.cmd([[:normal! B]])
+			end
+		end
 	end
 end
 

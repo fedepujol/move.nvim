@@ -143,52 +143,29 @@ M.cursor_col = function()
 	return vim.api.nvim_win_get_cursor(0)[2] + 1
 end
 
-M.calc_end_pos = function(word, oCursor)
-	local offset = M.cursor_col()
-
-	if offset ~= word.sCol then
-		word.eCol = offset - 2
-		vim.api.nvim_win_set_cursor(0, { oCursor[1], word.eCol })
-	end
-end
-
----
+--- Calculates the start and end column of the word
+--by the lenght of the copy word
 ---@param word table
----@param oCursor table
-M.cursor_word_cols = function(word, oCursor)
-	-- Move to the end and save the position
-	vim.cmd([[:normal! e]])
-	word.eCol = M.cursor_col()
+M.calc_cols = function(word)
+	vim.cmd([[:normal! viWy]])
 
-	-- Validate boundries
-	vim.cmd([[:normal! b]])
-	M.calc_end_pos(word, oCursor)
-end
-
----
----@param word table
----@param oCursor table
----@param dir number
-M.other_word_cols = function(word, oCursor, dir)
-	-- Go to begining of second word
-	-- Depending of the direction
-	-- we go forward or backard
-	if dir > 0 then
-		vim.cmd([[:normal! w]])
-	elseif dir < 0 then
-		vim.cmd([[:normal! b]])
-	end
-
-	-- Save begining position
+	-- Save position of word
 	word.sCol = M.cursor_col()
+	word.eCol = vim.fn.getreg("0"):len() + word.sCol - 1
+end
 
-	-- Move to the end and save the position
-	vim.cmd([[:normal! e]])
-	word.eCol = M.cursor_col()
+---Moves the cursor forwards or backwards
+--by the direction and then calls calc_cols
+---@param word table
+---@param dir number
+M.calc_word_cols = function(word, dir)
+	if dir > 0 then
+		vim.cmd([[:normal! W]])
+	else
+		vim.cmd([[:normal! B]])
+	end
 
-	-- Validate boundries
-	vim.cmd([[:normal! b]])
-	M.calc_end_pos(word, oCursor)
+	M.calc_cols(word)
 end
 
 local function rebuild_line(words, line, dir)
