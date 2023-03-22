@@ -108,13 +108,17 @@ end
 --- Moves a word to the given direction
 ---@param dir number
 M.horzWord = function(dir)
-	local words = { cursor = {}, other = {}, border = false }
+	local words = { cursor = {}, other = {} }
 
 	-- Line
 	local line = vim.api.nvim_get_current_line()
 
 	-- Original cursor position
 	local oCursor = vim.api.nvim_win_get_cursor(0)
+
+	if oCursor[2] == 0 and dir < 0 then
+		return
+	end
 
 	if oCursor[2] ~= 0 then
 		-- Go to begining of the word
@@ -124,10 +128,12 @@ M.horzWord = function(dir)
 		words.cursor.sCol = utils.cursor_col()
 		utils.cursor_word_cols(words.cursor, oCursor)
 
-		if words.cursor.eCol ~= #line then
+		if words.cursor.eCol == #line and dir > 0 then
+			return
+		end
+
+		if words.cursor.eCol ~= #line or dir < 0 then
 			utils.other_word_cols(words.other, oCursor, dir)
-		else
-			words.border = true
 		end
 	else
 		-- We know we are in the first char of the line
@@ -137,8 +143,6 @@ M.horzWord = function(dir)
 
 		if words.cursor.eCol ~= #line then
 			utils.other_word_cols(words.other, oCursor, dir)
-		else
-			words.border = true
 		end
 	end
 
@@ -146,9 +150,14 @@ M.horzWord = function(dir)
 	vim.api.nvim_win_set_cursor(0, oCursor)
 
 	words.cursor.value = line:sub(words.cursor.sCol, words.cursor.eCol)
-	if not words.border then
-		words.other.value = line:sub(words.other.sCol, words.other.eCol)
-		utils.swap_words(words, line, dir)
+	words.other.value = line:sub(words.other.sCol, words.other.eCol)
+
+	utils.swap_words(words, line, dir)
+
+	if dir > 0 then
+		vim.cmd([[:normal! w]])
+	else
+		vim.cmd([[:normal! b]])
 	end
 end
 
