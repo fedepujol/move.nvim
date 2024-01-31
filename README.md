@@ -41,7 +41,7 @@ This plugin works with Neovim v0.5 or later.
 'fedepujol/move.nvim';
 ```
 
-## :cog: Configuration
+## :gear: Configuration
 You can use the default's (leaving the setup function empty)
 ```lua
 require('move').setup({})
