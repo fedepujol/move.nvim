@@ -20,20 +20,19 @@ Gain the power to move lines and blocks!
 
 ## Requirements
 
-This plugin works with NeoVim v0.5 or later.
+This plugin works with Neovim v0.5 or later.
 
 ## Installation
 
-- [packer.nvim](https://github.com/wbthomason/packer.nvim)
+- [lazy](https://github.com/folke/lazy.nvim)
 
 ```lua
-use 'fedepujol/move.nvim'
-```
-
-- [vim-plug](https://github.com/junegunn/vim-plug)
-
-```vim
-Plug 'fedepujol/move.nvim'
+{ 
+    'fedepujol/move.nvim',
+    opts = {
+        --- Config
+    }
+}
 ```
 
 - [paq](https://github.com/savq/paq-nvim)
@@ -42,17 +41,47 @@ Plug 'fedepujol/move.nvim'
 'fedepujol/move.nvim';
 ```
 
+## :cog: Configuration
+You can use the default's (leaving the setup function empty)
+```lua
+require('move').setup({})
+
+```
+
+or customizing it
+```lua
+require('move').setup({
+	line = {
+		enable = true, -- Enables line movement
+		indent = true  -- Toggles indentation
+	},
+	block = {
+		enable = true, -- Enables block movement
+		indent = true  -- Toggles indentation
+	},
+	word = {
+		enable = true, -- Enables word movement
+	},
+	char = {
+		enable = false -- Enables char movement
+	}
+})
+
+```
+:information_source: By default, every option is enabled except char movement.
+:warning: Disabling line/block/word/char movements, will not generate the commands.
+
 ## Usage
 
 The plugin provides the following commands:
 
-| Command    | Description                                           | Mode   |
-| ---------- | ----------------------------------------------------- | ------ |
-| MoveLine   | Moves a line up or down                               | Normal |
-| MoveHChar  | Moves the character under the cursor, left or right   | Normal |
-| MoveWord   | Moves the word under the cursor forwards or backwards | Normal |
-| MoveBlock  | Moves a selected block of text, up or down            | Visual |
-| MoveHBlock | Moves a visual area, left or right                    | Visual |
+| Command    | Description                                               | Mode   |
+| ---------- | --------------------------------------------------------- | ------ |
+| MoveLine   | Moves a line up or down                                   | Normal |
+| MoveHChar  | Moves the character under the cursor, left or right       | Normal |
+| MoveWord   | Transpose the word under the cursor forwards or backwards | Normal |
+| MoveBlock  | Moves a selected block of text, up or down                | Visual |
+| MoveHBlock | Moves a visual area, left or right                        | Visual |
 
 ## :keyboard: Mappings
 
