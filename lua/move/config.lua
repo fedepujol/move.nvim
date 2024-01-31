@@ -1,10 +1,5 @@
----@class WDelimitedConfig
----@field enable boolean
----@field formulas table | nil
-
 ---@class MWordConfig
 ---@field enable boolean
----@field delimited WDelimitedConfig
 
 ---@class MLineConfig
 ---@field enable boolean
@@ -37,10 +32,6 @@ local default_config = {
 	},
 	word = {
 		enable = true,
-		delimited = {
-			enable = false,
-			formulas = nil
-		}
 	},
 	char = {
 		enable = false
