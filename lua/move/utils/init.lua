@@ -21,10 +21,10 @@ end
 ---@param vSRow number Start row of Visual area.
 ---@param vERow number End row of Visual area.
 M.reselect_block = function(dir, vSRow, vERow)
-	vim.api.nvim_exec(':normal! \\e\\e', false)
-	vim.api.nvim_exec(
+	vim.api.nvim_exec2(':normal! \\e\\e', { output = false })
+	vim.api.nvim_exec2(
 		':normal! ' .. (dir > 0 and vSRow + 2 or vSRow) .. 'ggV' .. (vERow + dir) .. 'gg',
-		false
+		{ output = false }
 	)
 end
 

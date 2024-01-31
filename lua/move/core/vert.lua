@@ -7,7 +7,8 @@ M.foldLastLine = -1
 
 ---Moves up or down the current cursor-line, mantaining the cursor over the line.
 ---@param dir number Movement direction. One of -1, 1.
-M.moveLine = function(dir)
+---@param indent boolean Enable auto-indent
+M.moveLine = function(dir, indent)
 	-- Get the last line of current buffer
 	local last_line = vim.fn.line('$')
 
@@ -38,7 +39,10 @@ M.moveLine = function(dir)
 
 		local amount = utils.calc_indent(target + dir, dir)
 		utils.swap_line(line, target + dir)
-		utils.indent(amount, target + dir)
+
+		if indent then
+			utils.indent(amount, target + dir)
+		end
 	end
 end
 
@@ -46,7 +50,8 @@ end
 ---@param dir number Movement direction. One of -1, 1.
 ---@param line1 number Initial line of the selected area.
 ---@param line2 number End line of the selected area.
-M.moveBlock = function(dir, line1, line2)
+---@param indent boolean Enable auto-indent
+M.moveBlock = function(dir, line1, line2, indent)
 	local vSRow = line1 or vim.fn.line('v')
 	local vERow = line2 or vim.api.nvim_win_get_cursor(0)[1]
 	local last_line = vim.fn.line('$')
@@ -63,11 +68,11 @@ M.moveBlock = function(dir, line1, line2)
 
 	-- Edges
 	if vSRow == 0 and dir < 0 then
-		vim.api.nvim_exec(':normal! ' .. vSRow .. 'ggV' .. vERow .. 'gg', false)
+		vim.api.nvim_exec2(':normal! ' .. vSRow .. 'ggV' .. vERow .. 'gg', { output = false })
 		return
 	end
 	if vERow == last_line and dir > 0 then
-		vim.api.nvim_exec(':normal! ' .. (vSRow + 1) .. 'ggV' .. (vERow + dir) .. 'gg', false)
+		vim.api.nvim_exec2(':normal! ' .. (vSRow + 1) .. 'ggV' .. (vERow + dir) .. 'gg', { output = false })
 		return
 	end
 
@@ -90,7 +95,9 @@ M.moveBlock = function(dir, line1, line2)
 		vim.cmd(':normal! zx')
 	end
 
-	utils.indent_block(amount, (dir > 0 and vSRow + 2 or vSRow), vERow + dir)
+	if indent then
+		utils.indent_block(amount, (dir > 0 and vSRow + 2 or vSRow), vERow + dir)
+	end
 	utils.reselect_block(dir, vSRow, vERow)
 end
 
