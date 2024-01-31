@@ -18,11 +18,11 @@ Gain the power to move lines and blocks!
 
 ![word](https://user-images.githubusercontent.com/26419570/227013070-6c5e041c-c500-4944-8c83-79d5d54f6394.gif)
 
-## Requirements
+## :zap: Requirements
 
 This plugin works with NeoVim v0.5 or later.
 
-## Installation
+## :package: Installation
 
 - [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
@@ -42,7 +42,7 @@ Plug 'fedepujol/move.nvim'
 'fedepujol/move.nvim';
 ```
 
-## Usage
+## :rocket: Usage
 
 The plugin provides the following commands:
 
@@ -93,7 +93,7 @@ vim.keymap.set('v', '<A-h>', ':MoveHBlock(-1)<CR>', opts)
 vim.keymap.set('v', '<A-l>', ':MoveHBlock(1)<CR>', opts)
 ```
 
-## Integration
+## :electric_plug: Integration
 
 ### [Legendary.nvim](https://github.com/mrjones2014/legendary.nvim)
 
