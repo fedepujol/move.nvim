@@ -71,7 +71,7 @@ require('move').setup({
 :information_source: By default, every option is enabled except char movement.
 :warning: Disabling line/block/word/char movements, will not generate the commands.
 
-## Usage
+## :rocket: Usage
 
 The plugin provides the following commands:
 
