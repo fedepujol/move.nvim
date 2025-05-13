@@ -45,26 +45,25 @@ This plugin works with Neovim v0.5 or later.
 You can use the default's (leaving the setup function empty)
 ```lua
 require('move').setup({})
-
 ```
 
 or customizing it
 ```lua
 require('move').setup({
-	line = {
-		enable = true, -- Enables line movement
-		indent = true  -- Toggles indentation
-	},
-	block = {
-		enable = true, -- Enables block movement
-		indent = true  -- Toggles indentation
-	},
-	word = {
-		enable = true, -- Enables word movement
-	},
-	char = {
-		enable = false -- Enables char movement
-	}
+    line = {
+        enable = true, -- Enables line movement
+        indent = true  -- Toggles indentation
+    },
+    block = {
+        enable = true, -- Enables block movement
+        indent = true  -- Toggles indentation
+    },
+    word = {
+        enable = true, -- Enables word movement
+    },
+    char = {
+        enable = false -- Enables char movement
+    }
 })
 
 ```
